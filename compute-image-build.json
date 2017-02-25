@@ -1,0 +1,33 @@
+{
+  "variables": {
+    "project_id": "{{env `PROJECT_ID`}}",
+    "gcr_prefix": "{{env `GCR_PREFIX`}}"
+  },
+  "builders" : [
+    {
+    "type": "googlecompute",
+    "project_id": "{{user `project_id`}}",
+    "source_image": "backports-debian-7-wheezy-v20150603",
+    "zone": "us-central1-f",
+    "image_name" : "guestbook-image",
+    "disk_size" : 10,
+    "machine_type" : "n1-standard-2",
+    "network" : "jenkins-net",
+    "tags" : ["ssh"]
+    }
+  ],
+  "provisioners" : [
+    {
+    "type": "shell",
+    "inline": [
+      "apt-get -y -qq update",
+      "wget -q -O docker-script.sh https://get.docker.com/ ",
+      "chmod +x docker-script.sh",
+      "./docker-script.sh",
+      "rm docker-script.sh",
+      "gcloud -q components update",
+      "gcloud docker pull {{user `gcr_prefix`}}/{{user `project_id`}}/guestbook"
+      ]
+    }
+  ]
+}
